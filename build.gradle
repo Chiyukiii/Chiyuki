@@ -1,0 +1,140 @@
+/* Mantaro's build.gradle */
+//Imports
+import org.apache.tools.ant.filters.ReplaceTokens
+
+//Plugins
+plugins {
+	//Compiles Java
+	id 'java'
+	//Adds an Executable Manifest
+	id 'application'
+	//Creates FatJars
+	id 'com.github.johnrengelman.shadow' version '1.2.4'
+	//Checks for RestActions
+	//aka did you queue but harsh
+	id 'com.sedmelluq.jdaction' version '1.0.1'
+	//Tell me when smth is outdated
+	id 'com.github.ben-manes.versions' version '0.16.0'
+}
+
+//Define the Main Class
+mainClassName = "net.kodehawa.mantarobot.MantaroBot"
+
+//Use an unified versioning system
+def ver = new Version(major: 4, minor: 8, revision: 2)
+version ver.toString()
+
+//We are going to use Java 8
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+	jcenter()
+    mavenCentral()
+	maven { url 'https://jitpack.io' }
+    maven { url "https://dl.bintray.com/kodehawa/maven" }
+	maven { url 'https://dl.bintray.com/natanbc/maven' }
+	mavenLocal()
+}
+
+tasks.withType(JavaCompile) {
+	options.compilerArgs << "-Xlint:deprecation"
+}
+
+dependencies {
+	//f272e34
+	compile 'com.github.DV8FromTheWorld:JDA:f272e34'
+	//compile 'net.dv8tion:JDA:3.4.0_318'
+	compile 'com.sedmelluq:lavaplayer:1.2.45'
+	compile 'com.sedmelluq:jda-nas:1.0.6'
+
+	compile 'org.reflections:reflections:0.9.9'
+	compile 'ch.qos.logback:logback-classic:0.9.26'
+
+	compile 'org.apache-extras.beanshell:bsh:2.0b6'
+
+	compile 'us.monoid.web:resty:0.3.2'
+
+	compile 'br.com.brjdevs:utils:1.0.0_15'
+	compile 'br.com.brjdevs:network:1.0.0_2'
+	compile 'br.com.brjdevs:trove-utils:1.0.0_4'
+
+	compile 'com.google.guava:guava:22.0'
+	compile 'com.google.code.gson:gson:2.8.0'
+	compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.1'
+
+	compile 'com.rethinkdb:rethinkdb-driver:2.3.3'
+	compile 'org.redisson:redisson:3.5.3'
+	compile 'io.sentry:sentry:1.2.0'
+
+	compile 'net.jodah:expiringmap:0.5.8'
+	compile 'org.apache.commons:commons-lang3:3.6'
+
+    compile fileTree(dir: 'lib', include: '*.jar')
+    compile 'net.kodehawa:imageboard-api:2.0.3_2'
+	compile 'com.github.natanbc:discordbots-api:1.4.2'
+
+    compileOnly "org.projectlombok:lombok:1.16.16"
+	compile 'com.datadoghq:java-dogstatsd-client:2.3'
+
+	compile 'com.github.natanbc:java-eval:1.0'
+
+	//Basically for FinderUtil
+	compile 'com.jagrosh:JDA-Utilities:1.9'
+}
+
+task wrapper(type: Wrapper) {
+	gradleVersion = '3.2'
+}
+
+//Task for the versioning system
+task prepareSource(type: Copy) {
+	from 'src/main/java'
+	into 'build/prepared-src'
+	filter(ReplaceTokens, tokens: [
+		version: ver.toString()
+	])
+	dependsOn clean
+}
+prepareSource.dependsOn clean
+
+compileJava {
+	source = prepareSource.destinationDir
+	classpath = sourceSets.main.compileClasspath
+	options.encoding = 'UTF-8'
+	dependsOn prepareSource
+}
+
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+build.dependsOn shadowJar
+
+artifacts {
+	archives shadowJar
+}
+
+task cleanDistTar(type: Delete) { delete files(distTar) }
+distTar { classifier = "trash" }
+distTar.finalizedBy cleanDistTar
+
+task cleanDistZip(type: Delete) { delete files(distZip) }
+distZip { classifier = "trash" }
+distZip.finalizedBy cleanDistZip
+
+task cleanUnshadedJar(type: Delete) { delete files(jar) }
+jar { classifier = "trash" }
+jar.finalizedBy cleanUnshadedJar
+
+shadowJar {
+	classifier = ""
+}
+
+class Version {
+	String major, minor, revision
+
+	String toString() {
+		"${major}.${minor}.${revision}"
+	}
+}

@@ -1,0 +1,54 @@
+### MantaroBot ###
+
+# Java
+*.class
+*.jar
+hs_err_pid*
+
+# IntelliJ
+*.iws
+/.idea
+/out/
+
+# Eclipse
+.metadata
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+.recommenders
+.project
+.externalToolBuilders/
+*.launch
+*.pydevproject
+.cproject
+.classpath
+.factorypath
+.buildpath
+.target
+.tern-project
+.texlipse
+.springBeans
+.recommenders/
+
+# Gradle
+.gradle
+/build/
+!gradle-wrapper.jar
+
+# Libs
+!/lib/*.jar
+
+# Runtime
+config.json
+data.json
+quotes.json
+/logs/
+
+#RethinkDB
+/db/
